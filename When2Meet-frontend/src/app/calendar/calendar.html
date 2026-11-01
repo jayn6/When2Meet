@@ -1,0 +1,210 @@
+<div class="app-layout">
+
+  <aside class="sidebar">
+    <h2>📅 When2Meet</h2>
+
+    <nav>
+      <a class="active">▦ Overview</a>
+      <a>▣ My Calendar</a>
+      <a>☷ Tasks</a>
+      <a>✧ AI Studio</a>
+      <a>♧ Friends & Groups</a>
+      <a>⚙ Settings</a>
+    </nav>
+  </aside>
+
+  <main class="main-content">
+
+    <header class="top-header">
+      <div>
+        <small>YOUR STUDENT PLANNER</small>
+        <h1>Good morning!</h1>
+      </div>
+
+      <button class="create-btn" (click)="openModal()">
+        + Create event
+      </button>
+    </header>
+
+    <section class="calendar-toolbar">
+
+      <div class="month-controls">
+        <button (click)="previousMonth()">‹</button>
+
+        <h2>{{ monthYear }}</h2>
+
+        <button (click)="nextMonth()">›</button>
+      </div>
+
+      <button class="today-btn" (click)="goToToday()">
+        Today
+      </button>
+
+    </section>
+
+    <section class="calendar-grid">
+
+      <div class="weekday"
+           *ngFor="let weekday of weekdays">
+        {{ weekday }}
+      </div>
+
+      <div class="calendar-cell"
+           *ngFor="let day of calendarDays">
+
+        <ng-container *ngIf="day">
+
+          <div class="day-number"
+               [class.today]="isToday(day)">
+            {{ day.getDate() }}
+          </div>
+
+          <div class="event-item"
+               *ngFor="let event of getEventsForDay(day)"
+               [ngClass]="event.category.toLowerCase()">
+
+            <span>{{ event.title }}</span>
+
+            <small>
+              {{ event.startDateTime.substring(11, 16) }}
+            </small>
+
+          </div>
+
+        </ng-container>
+
+      </div>
+
+    </section>
+
+  </main>
+
+</div>
+
+
+<!-- CREATE EVENT MODAL -->
+
+<div class="modal-overlay"
+     *ngIf="showModal"
+     (click)="closeModal()">
+
+  <div class="modal"
+       (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+      <div>
+        <small>NEW CALENDAR ITEM</small>
+        <h2>Create event</h2>
+      </div>
+
+      <button class="close-btn"
+              type="button"
+              (click)="closeModal()">×</button>
+    </div>
+
+    <form (ngSubmit)="saveEvent()">
+
+      <label>Event title</label>
+
+      <input
+        type="text"
+        name="title"
+        [(ngModel)]="title"
+        placeholder="What are you planning?"
+        required
+      >
+
+      <div class="form-row">
+
+        <div>
+          <label>Date</label>
+
+          <input
+            type="date"
+            name="eventDate"
+            [(ngModel)]="eventDate"
+            required
+          >
+        </div>
+
+        <div>
+          <label>Start time</label>
+
+          <input
+            type="time"
+            name="startTime"
+            [(ngModel)]="startTime"
+            required
+          >
+        </div>
+
+        <div>
+          <label>End time</label>
+
+          <input
+            type="time"
+            name="endTime"
+            [(ngModel)]="endTime"
+            required
+          >
+        </div>
+
+      </div>
+
+      <label>Location</label>
+
+      <input
+        type="text"
+        name="location"
+        [(ngModel)]="location"
+        placeholder="Room B14"
+      >
+
+      <label>Category</label>
+
+      <select name="category"
+              [(ngModel)]="category">
+
+        <option value="CLASS">Class</option>
+        <option value="EXAM">Exam</option>
+        <option value="PERSONAL">Personal</option>
+        <option value="ASSIGNMENT">Assignment</option>
+
+      </select>
+
+      <label>Visibility</label>
+
+      <select name="visibility"
+              [(ngModel)]="visibility">
+        <option value="PRIVATE">Private (only you)</option>
+        <option value="SHARED">Shared with friends</option>
+      </select>
+
+      <label>Description</label>
+
+      <textarea
+        name="description"
+        [(ngModel)]="description"
+        placeholder="Additional information..."
+      ></textarea>
+
+      <div class="modal-actions">
+
+        <button type="button"
+                class="cancel-btn"
+                (click)="closeModal()">
+          Cancel
+        </button>
+
+        <button type="submit"
+                class="create-btn">
+          Save event →
+        </button>
+
+      </div>
+
+    </form>
+
+  </div>
+
+</div>
