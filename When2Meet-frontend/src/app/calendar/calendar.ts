@@ -1,10 +1,9 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 import { EventService } from '../services/event.service';
 import { CalendarEvent } from '../models/event.model';
-
 @Component({
   selector: 'app-calendar',
   standalone: true,
@@ -13,8 +12,10 @@ import { CalendarEvent } from '../models/event.model';
   styleUrl: './calendar.css'
 })
 export class CalendarComponent implements OnInit {
+  selectedEvent: CalendarEvent | null = null;
 
   private eventService = inject(EventService);
+  private cdr = inject(ChangeDetectorRef);
 
   currentDate = new Date();
   events: CalendarEvent[] = [];
@@ -96,6 +97,8 @@ export class CalendarComponent implements OnInit {
     this.eventService.getEvents().subscribe({
       next: (data) => {
         this.events = data;
+        this.cdr.detectChanges();
+
       },
       error: (error) => {
         console.error('Could not load events:', error);
@@ -119,6 +122,22 @@ export class CalendarComponent implements OnInit {
 
   closeModal(): void {
     this.showModal = false;
+    this.cdr.detectChanges();
+  }
+
+  editEvent(event: CalendarEvent): void {
+    this.selectedEvent = event;
+    this.title = event.title;
+    this.description = event.description || '';
+    this.location = event.location || '';
+    this.category = event.category;
+    this.visibility = event.type;
+    this.eventDate = event.startDateTime.substring(0, 10);
+    this.startTime = event.startDateTime.substring(11, 16);
+    this.endTime = event.endDateTime.substring(11, 16);
+   
+
+    this.showModal = true;
   }
 
   resetForm(): void {
@@ -129,6 +148,7 @@ export class CalendarComponent implements OnInit {
     this.visibility = 'PRIVATE';
     this.startTime = '09:00';
     this.endTime = '10:00';
+    this.selectedEvent = null;
     
   }
 
@@ -144,7 +164,7 @@ export class CalendarComponent implements OnInit {
       return;
     }
 
-    const newEvent: CalendarEvent = {
+    const eventData: CalendarEvent = {
       title: this.title,
       description: this.description,
       startDateTime: `${this.eventDate}T${this.startTime}:00`,
@@ -154,18 +174,64 @@ export class CalendarComponent implements OnInit {
       category: this.category
     };
 
-    this.eventService.createEvent(newEvent).subscribe({
-      next: (savedEvent) => {
-        this.events = [...this.events, savedEvent];
+    if (this.selectedEvent && this.selectedEvent.id) {
+
+      this.eventService.updateEvent(this.selectedEvent.id, eventData).subscribe({
+        next: (updatedEvent) => {
+          this.events = this.events.map(event =>
+            event.id === updatedEvent.id ? updatedEvent : event
+
+          );
+            this.cdr.detectChanges();
+
+          this.selectedEvent = null;
+          this.closeModal();
+        },
+        error: (error) => {
+          console.error('Could not save event:', error);
+          alert('Could not update the event.');
+        }
+      });
+
+    }else {
+
+      this.eventService.createEvent(eventData).subscribe({
+        next: (savedEvent) => {
+          this.events = [...this.events, savedEvent];
+          this.closeModal();
+        },
+        error: (error) => {
+          console.error('Could not save event:', error);
+          alert('Could not save the event.');
+        }
+      });
+
+      } 
+  }
+
+  deleteEvent(): void {
+    if(!this.selectedEvent?.id){
+      return;
+    }
+
+    if(!confirm('Are you sure you want to delete this event?')){
+      return;
+    }
+
+    this.eventService.deleteEvent(this.selectedEvent.id).subscribe({
+      next: () => {
+        this.events = this.events.filter(
+          event => event.id !== this.selectedEvent?.id
+        );
+        this.selectedEvent = null;
         this.closeModal();
       },
       error: (error) => {
-        console.error('Could not save event:', error);
-        alert('Could not save the event. Check that the backend is running.');
+        console.error('Could not delete event:', error);
+        alert('Could not delete the event.');
       }
-    });
+    })
   }
-
   getEventsForDay(day: Date): CalendarEvent[] {
 
     const date = this.formatDate(day);

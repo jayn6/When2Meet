@@ -5,7 +5,11 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/events")
-@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin(origins = "http://localhost:4200",
+            methods = {RequestMethod.GET, RequestMethod.POST,
+                        RequestMethod.PUT, RequestMethod.DELETE,
+                        RequestMethod.OPTIONS})
+
 public class EventController {
 
     private final EventRepository repository;
@@ -34,5 +38,26 @@ public class EventController {
         }
 
         return repository.save(event);
+    }
+
+    @PutMapping("/{id}")
+    public Event updateEvent(@PathVariable Long id, @RequestBody Event updatedEvent){
+        Event event= repository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Event not found"));
+
+        event.setTitle(updatedEvent.getTitle());
+        event.setDescription(updatedEvent.getDescription());
+        event.setStartDateTime(updatedEvent.getStartDateTime());
+        event.setEndDateTime(updatedEvent.getEndDateTime());
+        event.setLocation(updatedEvent.getLocation());
+        event.setType(updatedEvent.getType());
+        event.setCategory(updatedEvent.getCategory());
+
+        return repository.save(event);
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteEvent(@PathVariable Long id) {
+        repository.deleteById(id);
     }
 }

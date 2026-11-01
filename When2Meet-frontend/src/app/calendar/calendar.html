@@ -1,7 +1,7 @@
 <div class="app-layout">
 
   <aside class="sidebar">
-    <h2>📅 hsdbqksdsqWhen2Meet</h2>
+    <h2>📅 When2Meet</h2>
 
     <nav>
       <a class="active">▦ Overview</a>
@@ -61,7 +61,8 @@
 
           <div class="event-item"
                *ngFor="let event of getEventsForDay(day)"
-               [ngClass]="event.category.toLowerCase()">
+               [ngClass]="event.category.toLowerCase()"
+               (click)="editEvent(event)">
 
             <span>{{ event.title }}</span>
 
@@ -196,9 +197,16 @@
           Cancel
         </button>
 
+        <button type="button"
+                class="delete-btn"
+                *ngIf="selectedEvent"
+                (click)="deleteEvent()">
+          Delete
+        </button>
+
         <button type="submit"
                 class="create-btn">
-          Save event →
+          {{ selectedEvent ? 'Update' : 'Create' }}
         </button>
 
       </div>
