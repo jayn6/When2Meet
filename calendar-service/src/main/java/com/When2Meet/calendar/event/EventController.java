@@ -14,13 +14,11 @@ public class EventController {
         this.repository = repository;
     }
 
-    // Get all events
     @GetMapping
     public List<Event> getAllEvents() {
         return repository.findAll();
     }
 
-    // Create an event
     @PostMapping
     public Event createEvent(@RequestBody Event event) {
 
