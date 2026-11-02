@@ -93,8 +93,10 @@
       </div>
 
       <div class="calendar-cell"
-           *ngFor="let day of calendarDays"
-           (click)="day && openModal(day)">
+           *ngFor="let day of calendarDays; let i=index; trackBy: trackByIndex"
+           (click)="day && openModal(day)"
+           (dragover)="onDragOver($event)"
+           (drop)="$event.preventDefault(); onDrop(day!)">
 
         <ng-container *ngIf="day">
 
@@ -104,8 +106,10 @@
           </div>
 
           <div class="event-item"
-               *ngFor="let event of getEventsForDay(day)"
+               *ngFor="let event of getEventsForDay(day); trackBy: trackById"
                [ngClass]="event.category.toLowerCase()"
+               draggable="true"
+               (dragstart)="onDragStart(event, $event)"
                (click)="$event.stopPropagation(); editEvent(event)">
 
             <span>{{ event.title }}</span>

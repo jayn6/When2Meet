@@ -157,8 +157,6 @@ button {
 
 .calendar-cell:hover .day-number {
   transform: scale(1.5);
-  transform-origin: left center;
-  transition: transform 0.5s ease;
 }
 
 .calendar-cell:hover .day-number.today {
@@ -168,6 +166,9 @@ button {
 .day-number {
   margin-bottom: 12px;
   font-size: 13px;
+  display: inline-block;
+  transition: transform 0.2s ease;
+  transform-origin: left center;
 }
 
 .day-number.today {
@@ -194,7 +195,7 @@ button {
   font-size: 11px;
   overflow: hidden;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
-  cursor: pointer;
+  cursor: grab;
 }
 
 .event-item span {

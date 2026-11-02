@@ -13,6 +13,7 @@ import { CalendarEvent } from '../models/event.model';
 })
 export class CalendarComponent implements OnInit {
   selectedEvent: CalendarEvent | null = null;
+  draggedEvent: CalendarEvent | null = null;
 
   private eventService = inject(EventService);
   private cdr = inject(ChangeDetectorRef);
@@ -252,4 +253,50 @@ export class CalendarComponent implements OnInit {
   isToday(day: Date): boolean {
     return this.formatDate(day) === this.formatDate(new Date());
   }
+
+  onDragOver(e: DragEvent): void {
+    e.preventDefault();
+    if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+  }
+
+  onDragStart(event: CalendarEvent, e: DragEvent): void {
+    this.draggedEvent = event;
+    e.dataTransfer?.setData('text/plain', String(event.id));
+    e.dataTransfer!.effectAllowed = 'move';
+  }
+  onDrop(day: Date): void {
+    console.log('drop', day, this.draggedEvent);
+    const ev= this.draggedEvent;
+    this.draggedEvent = null;
+    if (!ev || !ev.id) return;
+
+    const newDate = this.formatDate(day);
+
+    if (ev.startDateTime.substring(0, 10) === newDate) return;
+
+    const moved: CalendarEvent = {
+      ...ev,
+      startDateTime: newDate+ ev.startDateTime.substring(10),
+      endDateTime: newDate+ ev.endDateTime.substring(10)
+    };
+    
+    this.eventService.updateEvent(ev.id, moved).subscribe({
+      next: (updatedEvent) => {
+        this.events = this.events.map(e => e.id === updatedEvent.id ? updatedEvent : e);
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('Could not move event:', error);
+        alert('Could not move the event.');
+      }
+    })
+  }
+  
+  trackById(index: number, event: CalendarEvent) {
+    return event.id;
+  }
+  trackByIndex(index: number) {
+    return index;
+  }
+
 }
