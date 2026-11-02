@@ -72,7 +72,7 @@ button, input, select, textarea {
 
 .top-header h1 {
   margin: 8px 0;
-  font-size: 30px;
+  font-size: 35px;
 }
 
 button {
@@ -108,7 +108,7 @@ button {
 .month-controls h2 {
   min-width: 190px;
   text-align: center;
-  font-size: 22px;
+  font-size: 25px;
 }
 
 .month-controls button,
@@ -149,6 +149,22 @@ button {
   overflow: hidden;
 }
 
+.calendar-cell:hover {
+  outline: 2px solid rgb(151, 147, 147);
+  outline-offset: -2px;
+
+}
+
+.calendar-cell:hover .day-number {
+  transform: scale(1.5);
+  transform-origin: left center;
+  transition: transform 0.5s ease;
+}
+
+.calendar-cell:hover .day-number.today {
+  transform: rotate(-8deg) scale(1.08);
+}
+
 .day-number {
   margin-bottom: 12px;
   font-size: 13px;
@@ -156,11 +172,15 @@ button {
 
 .day-number.today {
   display: inline-block;
-  padding: 5px 8px;
-  border-radius: 5px;
+  padding: 5px 9px;
   background: #d9f36a;
+  color: #20231f;
   font-weight: bold;
+  border: 1px solid #20231f;
+  box-shadow: 2px 2px 0 #20231f;
+  transition: transform 0.2s ease;
 }
+
 
 .event-item {
   display: flex;
@@ -173,6 +193,8 @@ button {
   color: #2946ca;
   font-size: 11px;
   overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
 }
 
 .event-item span {
@@ -207,6 +229,54 @@ button {
   border-color: #8970d8;
   background: #f1edff;
   color: #7255c5;
+}
+
+.event-item:hover {
+  transform: translateX(4px);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+/* Calendar Legend */
+
+.calendar-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: #656b64;
+  padding: 8px;
+  border: 1px solid #e4e0d7;
+  border-radius: 8px;
+  background: #fffefa;
+}
+
+.legend-color {
+  width: 8px;
+  height: 8px;
+  border-radius: 20px;
+}
+
+.class-color {
+  background: #3657e8;
+}
+
+.exam-color {
+  background: #ff796c;
+}
+
+.personal-color {
+  background: #599778;
+}
+
+.assignment-color {
+  background: #e69a24;
 }
 
 /* Modal */
@@ -310,7 +380,7 @@ button {
   color: #666;
 }
 
-@media (max-width: 750px) {
+@media (max-width: 900px) {
   .sidebar {
     width: 65px;
     padding: 15px 5px;
@@ -321,9 +391,19 @@ button {
   }
 
   .sidebar nav a {
-    font-size: 0;
-    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 13px 5px;
+
   }
+  .nav-text {
+  display: none;
+}
+
+.nav-icon {
+  font-size: 20px;
+}
 
   .main-content {
     padding: 20px 10px;
@@ -345,4 +425,13 @@ button {
   .form-row {
     grid-template-columns: 1fr;
   }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 15px;
+  }
+
+  
 }

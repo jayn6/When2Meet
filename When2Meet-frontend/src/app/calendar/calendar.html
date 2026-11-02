@@ -4,12 +4,30 @@
     <h2>📅 When2Meet</h2>
 
     <nav>
-      <a class="active">▦ Overview</a>
-      <a>▣ My Calendar</a>
-      <a>☷ Tasks</a>
-      <a>✧ AI Studio</a>
-      <a>♧ Friends & Groups</a>
-      <a>⚙ Settings</a>
+      <a class="active">
+      <span class="nav-icon">▦ </span>
+      <span class="nav-text"> Overview</span>
+      </a>
+      <a>
+        <span class="nav-icon">🗓 </span>
+        <span class="nav-text"> My Calendar</span>
+      </a>
+      <a>
+        <span class="nav-icon">≔ </span>
+        <span class="nav-text"> Tasks</span>
+      </a>
+      <a>
+        <span class="nav-icon">✧ </span>
+        <span class="nav-text"> AI Studio</span>
+      </a>
+      <a>
+        <span class="nav-icon">♧ </span>
+        <span class="nav-text"> Friends</span>
+      </a>
+      <a>
+        <span class="nav-icon">⚙ </span>
+        <span class="nav-text"> Settings</span>
+      </a>
     </nav>
   </aside>
 
@@ -26,7 +44,9 @@
       </button>
     </header>
 
+    
     <section class="calendar-toolbar">
+      
 
       <div class="month-controls">
         <button (click)="previousMonth()">‹</button>
@@ -42,7 +62,30 @@
 
     </section>
 
+    <div class="calendar-legend">
+  <div class="legend-item">
+    <span class="legend-color class-color"></span>
+    Class
+  </div>
+
+  <div class="legend-item">
+    <span class="legend-color exam-color"></span>
+    Exam
+  </div>
+
+  <div class="legend-item">
+    <span class="legend-color personal-color"></span>
+    Personal
+  </div>
+
+  <div class="legend-item">
+    <span class="legend-color assignment-color"></span>
+    Assignment
+  </div>
+</div>
+
     <section class="calendar-grid">
+      
 
       <div class="weekday"
            *ngFor="let weekday of weekdays">
@@ -50,7 +93,8 @@
       </div>
 
       <div class="calendar-cell"
-           *ngFor="let day of calendarDays">
+           *ngFor="let day of calendarDays"
+           (click)="day && openModal(day)">
 
         <ng-container *ngIf="day">
 
@@ -62,7 +106,7 @@
           <div class="event-item"
                *ngFor="let event of getEventsForDay(day)"
                [ngClass]="event.category.toLowerCase()"
-               (click)="editEvent(event)">
+               (click)="$event.stopPropagation(); editEvent(event)">
 
             <span>{{ event.title }}</span>
 

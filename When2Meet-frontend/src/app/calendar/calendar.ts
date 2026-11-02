@@ -106,15 +106,15 @@ export class CalendarComponent implements OnInit {
     });
   }
 
-  openModal(): void {
+  openModal(day?: Date): void {
     this.resetForm();
 
-    const today = new Date();
+    const selectedDay =day || new Date();
 
     this.eventDate = [
-      today.getFullYear(),
-      String(today.getMonth() + 1).padStart(2, '0'),
-      String(today.getDate()).padStart(2, '0')
+      selectedDay.getFullYear(),
+      String(selectedDay.getMonth() + 1).padStart(2, '0'),
+      String(selectedDay.getDate()).padStart(2, '0')
     ].join('-');
 
     this.showModal = true;
