@@ -39,9 +39,14 @@
         <h1>Good morning!</h1>
       </div>
 
-      <button class="create-btn" (click)="openModal()">
-        + Create event
-      </button>
+      <div class="header-actions">
+        
+        <input type="text" placeholder="🔎︎ Search events...">
+<span> </span>
+        <button class="create-btn" (click)="openModal()"> + Create event </button>  
+      </div>
+
+      
     </header>
 
     
@@ -56,9 +61,17 @@
         <button (click)="nextMonth()">›</button>
       </div>
 
-      <button class="today-btn" (click)="goToToday()">
-        Today
-      </button>
+      <div class="toolbar-right">
+        <div class="view-mode-buttons">
+          <button [class.active]="viewMode === 'month'" (click)="viewMode = 'month'">Month</button>
+          <button [class.active]="viewMode === 'week'" (click)="viewMode = 'week'">Week</button>
+          <button [class.active]="viewMode === 'day'" (click)="viewMode = 'day'">Day</button>
+
+        </div>
+
+        <button class="today-btn" (click)="goToToday()"> Today </button>
+      </div>
+      
 
     </section>
 
@@ -84,7 +97,9 @@
   </div>
 </div>
 
-    <section class="calendar-grid">
+    <section class="calendar-grid"
+             *ngIf="viewMode !== 'day'"
+             [class.week]="viewMode === 'week'">
       
 
       <div class="weekday"
@@ -124,6 +139,33 @@
 
       </div>
 
+    </section>
+    
+    <section class="day-view" *ngIf="viewMode === 'day'">
+      <div class="day-side">
+        <small>{{ currentDate | date:'EEE' | uppercase }}</small>
+        <strong>{{ currentDate.getDate() }}</strong>
+        <span>{{ currentDate | date:'MMMM y' }}</span>
+      </div>
+
+      <div class="day-hours">
+        <div class="hour-row"
+            *ngFor="let h of hours"
+            (click)="openModal(currentDate)">
+
+          <span class="hour-label">{{ h < 10 ? '0' + h : h }}:00</span>
+
+          <div class="hour-events">
+            <div class="event-item"
+                *ngFor="let event of getHourEvents(h)"
+                [ngClass]="event.category.toLowerCase()"
+                (click)="$event.stopPropagation(); editEvent(event)">
+              <span>{{ event.title }}</span>
+              <small>{{ event.startDateTime.substring(11, 16) }}</small>
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
 
   </main>

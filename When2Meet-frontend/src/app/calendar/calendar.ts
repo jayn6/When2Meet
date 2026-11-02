@@ -33,22 +33,35 @@ export class CalendarComponent implements OnInit {
   visibility: 'PRIVATE' | 'SHARED' = 'PRIVATE';
 
   weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  viewMode: 'month' | 'week' | 'day' = 'month';
+  hours= Array.from({length: 24}, (_, i)=> i);
 
   ngOnInit(): void {
     this.loadEvents();
   }
 
   get monthYear(): string {
+    if (this.viewMode === 'day') {
+      return this.currentDate.toLocaleDateString('en-US', {
+        weekday: 'short', day: 'numeric', month: 'long', year: 'numeric'
+      });
+    }
     return this.currentDate.toLocaleDateString('en-US', {
-      month: 'long',
-      year: 'numeric'
+      month: 'long', year: 'numeric'
     });
   }
 
   get calendarDays(): (Date | null)[] {
-
     const year = this.currentDate.getFullYear();
     const month = this.currentDate.getMonth();
+    const date = this.currentDate.getDate();
+
+    if (this.viewMode === 'week') {
+      const offset= (this.currentDate.getDay() + 6) % 7;
+      return Array.from({length: 7}, (_, i) => new Date(year, month, date - offset + i));
+    
+    
+    }
 
     const firstDay = new Date(year, month, 1);
 
@@ -63,8 +76,8 @@ export class CalendarComponent implements OnInit {
       days.push(null);
     }
 
-    for (let day = 1; day <= numberOfDays; day++) {
-      days.push(new Date(year, month, day));
+    for (let d = 1; d <= numberOfDays; d++) {
+      days.push(new Date(year, month, d));
     }
 
     while (days.length % 7 !== 0) {
@@ -75,24 +88,42 @@ export class CalendarComponent implements OnInit {
   }
 
   previousMonth(): void {
-    this.currentDate = new Date(
-      this.currentDate.getFullYear(),
-      this.currentDate.getMonth() - 1,
-      1
-    );
+    this.move(-1);
   }
 
   nextMonth(): void {
-    this.currentDate = new Date(
-      this.currentDate.getFullYear(),
-      this.currentDate.getMonth() + 1,
-      1
-    );
+    this.move(1);
   }
 
   goToToday(): void {
     this.currentDate = new Date();
+    
   }
+
+  setView(mode: 'month' | 'week' | 'day'): void {
+    this.viewMode = mode;
+  }
+
+  move(dir: number): void {
+    const y = this.currentDate.getFullYear();
+    const m = this.currentDate.getMonth();
+    const d = this.currentDate.getDate();
+
+    if (this.viewMode === 'week') {
+      this.currentDate = new Date(y, m, d + 7 * dir);
+    } else if (this.viewMode === 'day') {
+      this.currentDate = new Date(y, m, d + dir);
+    } else {
+      this.currentDate = new Date(y, m + dir, 1);
+    }
+  }
+
+  getHourEvents(hour: number): CalendarEvent[] {
+    return this.getEventsForDay(this.currentDate).filter(e =>
+      Number(e.startDateTime.substring(11, 13)) === hour
+    );
+  }
+  
 
   loadEvents(): void {
     this.eventService.getEvents().subscribe({

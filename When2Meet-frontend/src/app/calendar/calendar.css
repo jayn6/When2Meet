@@ -381,6 +381,100 @@ button {
   color: #666;
 }
 
+.toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.view-mode-buttons {
+  display: inline-flex;
+  border: 1px solid #dedbd2;
+  align-items: center;
+  padding: 4px;
+  gap: 4px;
+  border-radius: 12px;
+  background: #e8e5dc;
+}
+
+.view-mode-buttons button {
+  padding: 8px 16px;
+  border-radius: 8px;
+  background: transparent;
+  color: #777d76;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.view-mode-buttons button:hover:not(.active) {
+  background: #f8f7f1;
+  color: #20231f;
+}
+
+.view-mode-buttons button.active {
+  background: #fffefa;
+  color: #20231f;
+  font-weight: bold;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.calendar-grid.week .calendar-cell {
+  min-height: 300px;
+}
+
+.day-view {
+  display: flex;
+  border: 1px solid #dedbd2;
+  background: #fffefa;
+}
+
+.day-side {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 170px;
+  flex-shrink: 0;
+  padding: 30px 25px;
+  background: #3657e8;
+  color: white;
+}
+
+.day-side small {
+  letter-spacing: 2px;
+}
+
+.day-side strong {
+  font-size: 80px;
+  line-height: 1;
+}
+
+.day-hours {
+  flex: 1;
+  min-width: 0;
+}
+
+.hour-row {
+  display: flex;
+  min-height: 64px;
+  border-bottom: 1px solid #dedbd2;
+  cursor: pointer;
+}
+
+.hour-label {
+  width: 70px;
+  flex-shrink: 0;
+  padding: 8px 12px;
+  color: #777d76;
+  font-size: 12px;
+}
+
+.hour-events {
+  flex: 1;
+  padding: 6px;
+}
+
 @media (max-width: 900px) {
   .sidebar {
     width: 65px;
