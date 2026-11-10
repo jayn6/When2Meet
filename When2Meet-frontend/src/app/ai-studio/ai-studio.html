@@ -1,0 +1,271 @@
+<div class="ai-page">
+
+  <header class="page-header">
+    <div>
+      <span class="eyebrow">UNIFLOW / AI STUDIO</span>
+      <h1>Smart timetable import</h1>
+      <p>Turn your university timetable into calendar events.</p>
+    </div>
+  </header>
+
+  <div class="content">
+
+    <!-- UPLOAD SECTION -->
+
+    <section class="panel">
+
+      <div class="section-heading">
+        <div>
+          <span class="step">01 — UPLOAD</span>
+          <h2>Your timetable</h2>
+          <p>Upload a clear picture of your weekly university schedule.</p>
+        </div>
+        <span class="step-icon">✧</span>
+      </div>
+
+      <label class="upload-area">
+
+        <input
+          type="file"
+          accept="image/png,image/jpeg,image/webp"
+          (change)="onFileSelected($event)"
+          hidden
+        >
+
+        <ng-container *ngIf="!previewUrl">
+
+          <div class="upload-icon">＋</div>
+
+          <h3>Drop your timetable here</h3>
+
+          <p>Or click to browse your files</p>
+
+          <small>JPG, PNG or WEBP · Maximum 10 MB</small>
+
+        </ng-container>
+
+        <ng-container *ngIf="previewUrl">
+
+          <img [src]="previewUrl" alt="Timetable preview">
+
+          <h3>{{ selectedFile?.name }}</h3>
+
+          <p>Image ready for extraction</p>
+
+        </ng-container>
+
+      </label>
+
+      <button
+        class="primary-btn extract-btn"
+        [disabled]="!selectedFile || isLoading"
+        (click)="extract()">
+
+        {{ isLoading ? 'Analyzing timetable...' : '✧ Extract with AI' }}
+
+      </button>
+
+    </section>
+
+
+    <!-- SCHEDULE PERIOD -->
+
+    <section class="panel">
+
+      <span class="step">02 — SCHEDULE PERIOD</span>
+
+      <h2>When does this schedule apply?</h2>
+
+      <p>
+        Select the dates during which your weekly timetable is valid.
+      </p>
+
+      <div class="date-row">
+
+        <div>
+          <label>Start date</label>
+
+          <input
+            type="date"
+            [(ngModel)]="startDate"
+            name="startDate"
+          >
+        </div>
+
+        <div>
+          <label>End date</label>
+
+          <input
+            type="date"
+            [(ngModel)]="endDate"
+            name="endDate"
+          >
+        </div>
+
+      </div>
+
+      <small class="hint">
+        Example: September 1 to December 31 for the first semester.
+      </small>
+
+    </section>
+
+
+    <!-- ERROR AND SUCCESS -->
+
+    <div class="message error" *ngIf="errorMessage">
+      {{ errorMessage }}
+    </div>
+
+    <div class="message success" *ngIf="successMessage">
+      {{ successMessage }}
+    </div>
+
+
+    <!-- REVIEW SECTION -->
+
+    <section class="panel" *ngIf="classes.length > 0">
+
+      <div class="section-heading">
+
+        <div>
+          <span class="step">03 — REVIEW</span>
+          <h2>Extracted classes</h2>
+          <p>
+            Check the information carefully. You can edit or remove classes.
+          </p>
+        </div>
+
+        <span class="count">{{ classes.length }} classes</span>
+
+      </div>
+
+
+      <div class="class-list">
+
+        <div
+          class="class-card"
+          *ngFor="let item of classes; let i = index">
+
+          <div class="class-top">
+
+            <span class="class-number">
+              CLASS {{ i + 1 }}
+            </span>
+
+            <button
+              type="button"
+              class="remove-btn"
+              (click)="removeClass(i)">
+              Remove
+            </button>
+
+          </div>
+
+          <div class="fields">
+
+            <div class="field full">
+              <label>Subject</label>
+
+              <input
+                [(ngModel)]="item.subject"
+                name="subject-{{i}}"
+                placeholder="Subject name"
+              >
+            </div>
+
+            <div class="field">
+              <label>Weekday</label>
+
+              <select
+                [(ngModel)]="item.dayOfWeek"
+                name="day-{{i}}">
+
+                <option
+                  *ngFor="let day of weekdays"
+                  [value]="day">
+                  {{ day }}
+                </option>
+
+              </select>
+            </div>
+
+            <div class="field">
+              <label>Room</label>
+
+              <input
+                [(ngModel)]="item.room"
+                name="room-{{i}}"
+                placeholder="Room B14"
+              >
+            </div>
+
+            <div class="field">
+              <label>Start time</label>
+
+              <input
+                type="time"
+                [(ngModel)]="item.startTime"
+                name="start-{{i}}"
+              >
+            </div>
+
+            <div class="field">
+              <label>End time</label>
+
+              <input
+                type="time"
+                [(ngModel)]="item.endTime"
+                name="end-{{i}}"
+              >
+            </div>
+
+            <div class="field full">
+              <label>Teacher (optional)</label>
+
+              <input
+                [(ngModel)]="item.teacher"
+                name="teacher-{{i}}"
+                placeholder="Teacher name"
+              >
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <button
+        class="secondary-btn"
+        type="button"
+        (click)="addClass()">
+        + Add another class
+      </button>
+
+      <div class="confirmation">
+
+        <div>
+          <h3>Ready to add your schedule?</h3>
+          <p>
+            Confirming will generate the corresponding events
+            throughout your selected date range.
+          </p>
+        </div>
+
+        <button
+          class="primary-btn"
+          [disabled]="isSaving"
+          (click)="confirm()">
+
+          {{ isSaving ? 'Saving...' : 'Confirm and add to calendar →' }}
+
+        </button>
+
+      </div>
+
+    </section>
+
+  </div>
+
+</div>

@@ -1,14 +1,10 @@
-import { Component, signal } from '@angular/core';
-import { CalendarComponent } from './calendar/calendar';
+import { Component } from '@angular/core';
+import { AiStudioComponent } from './ai-studio/ai-studio';
 
 @Component({
-  imports: [CalendarComponent],
   selector: 'app-root',
-    standalone: true,
-
-  styleUrl: './app.css',
-  template: '<app-calendar></app-calendar>',
+  standalone: true,
+  imports: [AiStudioComponent],
+  template: '<app-ai-studio></app-ai-studio>'
 })
-export class App {
-  protected readonly title = signal('When2Meet-frontend');
-}
+export class App {}
