@@ -100,9 +100,9 @@ export class CalendarComponent implements OnInit {
     
   }
 
-  setView(mode: 'month' | 'week' | 'day'): void {
+  /*setView(mode: 'month' | 'week' | 'day'): void {
     this.viewMode = mode;
-  }
+  }*/
 
   move(dir: number): void {
     const y = this.currentDate.getFullYear();

@@ -113,7 +113,7 @@ export class AiStudioComponent {
           this.isLoading = false;
 
           this.errorMessage =
-            'Could not extract the timetable. Check your backend and API key.';
+            error?.error?.error ?? 'Could not extract the timetable. Check your backend and API key.';
         }
 
       });
@@ -186,6 +186,11 @@ export class AiStudioComponent {
 
         this.classes = [];
         this.selectedFile = null;
+
+        if (this.previewUrl) {
+          URL.revokeObjectURL(this.previewUrl);
+          this.previewUrl = null;
+        }
 
       },
 

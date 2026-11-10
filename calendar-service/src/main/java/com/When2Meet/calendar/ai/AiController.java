@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.*;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 @RestController
@@ -81,8 +82,7 @@ public class AiController {
             );
         }
 
-        if (request.startDate().until(
-            request.endDate()).getDays() > 370) {
+        if (ChronoUnit.DAYS.between(request.startDate(), request.endDate()) > 370) {
 
             throw new IllegalArgumentException(
                 "Schedule period is too long."

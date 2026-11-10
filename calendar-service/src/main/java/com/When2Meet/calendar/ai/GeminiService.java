@@ -1,7 +1,7 @@
 package com.When2Meet.calendar.ai;
 
-import com.jackson.databind.JsonNode;
-import com.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.When2Meet.calendar.ai.dto.TimetableExtractionResponse;
 
@@ -22,9 +22,18 @@ public class GeminiService {
     @Value("${gemini.api.model}")
     private String model;
 
-    private final ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper = new ObjectMapper()
+        .configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate = new RestTemplate(timeoutFactory());
+
+    private static org.springframework.http.client.SimpleClientHttpRequestFactory timeoutFactory() {
+        org.springframework.http.client.SimpleClientHttpRequestFactory f =
+            new org.springframework.http.client.SimpleClientHttpRequestFactory();
+        f.setConnectTimeout(10000);
+        f.setReadTimeout(60000);
+        return f;
+   }
 
     public TimetableExtractionResponse extract(MultipartFile file)
             throws Exception {
@@ -97,7 +106,7 @@ public class GeminiService {
         // Ask Gemini for JSON output
         Map<String, Object> generationConfig = Map.of(
             "responseMimeType", "application/json",
-            "temperature", 0.1
+            "thinkingConfig", Map.of("thinkingLevel", "low")
         );
 
         Map<String, Object> requestBody = Map.of(
@@ -118,26 +127,29 @@ public class GeminiService {
             new HttpEntity<>(requestBody, headers);
 
         // Send request to Gemini
-        ResponseEntity<JsonNode> response =
-            restTemplate.exchange(
-                url,
-                HttpMethod.POST,
-                request,
-                JsonNode.class
-            );
+        ResponseEntity<String> response = null;
+        for (int attempt = 1; attempt <= 3; attempt++) {
+            try {
+                response = restTemplate.exchange(url, HttpMethod.POST, request, String.class);
+                break;
+            } catch (org.springframework.web.client.HttpServerErrorException e) {
+                if (attempt == 3) throw e;
+                Thread.sleep(2000L * attempt);
+            }
+}
 
-        JsonNode responseBody = response.getBody();
+        JsonNode root = mapper.readTree(response.getBody());
 
-        if (responseBody == null ||
-            !responseBody.path("candidates").isArray() ||
-            responseBody.path("candidates").isEmpty()) {
+        if (root == null ||
+            !root.path("candidates").isArray() ||
+            root.path("candidates").isEmpty()) {
 
             throw new RuntimeException(
                 "Gemini could not extract the timetable."
             );
         }
 
-        JsonNode parts = responseBody
+        JsonNode parts = root
             .path("candidates")
             .get(0)
             .path("content")
@@ -152,9 +164,15 @@ public class GeminiService {
         }
 
         // Convert returned JSON into Java DTO
-        return mapper.readValue(
+        /*return mapper.readValue(
             result.toString(),
             TimetableExtractionResponse.class
-        );
+        );*/
+
+        String json = result.toString().trim();
+        if (json.startsWith("```")) {
+            json = json.replaceAll("^```(?:json)?\\s*", "").replaceAll("\\s*```$", "");
+        }
+        return mapper.readValue(json, TimetableExtractionResponse.class);
     }
 }
