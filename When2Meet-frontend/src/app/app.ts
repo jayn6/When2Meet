@@ -1,10 +1,9 @@
 import { Component } from '@angular/core';
-import { AiStudioComponent } from './ai-studio/ai-studio';
-
+import { RouterOutlet } from '@angular/router';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [AiStudioComponent],
-  template: '<app-ai-studio></app-ai-studio>'
+  imports: [RouterOutlet],
+  template: '<router-outlet></router-outlet>'
 })
 export class App {}

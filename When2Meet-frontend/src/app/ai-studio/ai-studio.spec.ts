@@ -1,16 +1,16 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { AiStudio } from './ai-studio';
+import { AiStudioComponent } from './ai-studio';
 
-describe('AiStudio', () => {
-  let component: AiStudio;
-  let fixture: ComponentFixture<AiStudio>;
+describe('AiStudioComponent', () => {
+  let component: AiStudioComponent;
+  let fixture: ComponentFixture<AiStudioComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AiStudio],
+      imports: [AiStudioComponent],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(AiStudio);
+    fixture = TestBed.createComponent(AiStudioComponent);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });

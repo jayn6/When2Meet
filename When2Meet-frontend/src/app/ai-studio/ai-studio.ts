@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
+import { Router } from '@angular/router';
 import { TimetableService } from '../services/timetable';
 
 import {
@@ -17,7 +17,7 @@ import {
   styleUrl: './ai-studio.css'
 })
 export class AiStudioComponent {
-
+  private router = inject(Router);
   private timetableService = inject(TimetableService);
 
   selectedFile: File | null = null;
@@ -191,6 +191,8 @@ export class AiStudioComponent {
           URL.revokeObjectURL(this.previewUrl);
           this.previewUrl = null;
         }
+
+        this.router.navigate(['/calendar']);
 
       },
 

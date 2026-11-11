@@ -1,0 +1,87 @@
+:host {
+  display: block;
+  min-height: 100vh;
+  color: #20231f;
+  font-family: Arial, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+button, input, select, textarea {
+  font: inherit;
+}
+
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+  background: #f7f5ef;
+}
+
+.sidebar {
+  width: 220px;
+  flex-shrink: 0;
+  padding: 25px 15px;
+  border-right: 1px solid #e4e0d7;
+}
+
+.sidebar h2 {
+  margin: 0 0 40px;
+  font-size: 23px;
+}
+
+.sidebar nav {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sidebar nav a {
+  padding: 13px;
+  border-radius: 9px;
+  color: #656b64;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.sidebar nav a.active {
+  background: #e8ecff;
+  color: #3657e8;
+}
+
+.main-content {
+  flex: 1;
+  min-width: 0;
+  padding: 35px 30px;
+}
+
+@media (max-width: 900px) {
+  .sidebar {
+    width: 65px;
+    padding: 15px 5px;
+  }
+
+  .sidebar h2 {
+    font-size: 0;
+  }
+
+  .sidebar nav a {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 13px 5px;
+  }
+
+  .nav-text {
+    display: none;
+  }
+
+  .nav-icon {
+    font-size: 20px;
+  }
+
+  .main-content {
+    padding: 20px 10px;
+  }
+}
