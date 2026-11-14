@@ -41,6 +41,13 @@ export class CalendarComponent implements OnInit {
     this.loadEvents();
   }
 
+  get greeting(): string {
+    const h = new Date().getHours();
+    if (h < 12) return 'Good morning!';
+    if (h < 18) return 'Good afternoon!';
+    return 'Good evening!';
+  }
+
   get monthYear(): string {
     if (this.viewMode === 'day') {
       return this.currentDate.toLocaleDateString('en-US', {

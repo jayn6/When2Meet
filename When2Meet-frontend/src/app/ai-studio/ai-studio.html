@@ -1,271 +1,278 @@
 <div class="ai-page">
 
+  <!-- HEADER -->
   <header class="page-header">
     <div>
-      <span class="eyebrow">UNIFLOW / AI STUDIO</span>
-      <h1>Smart timetable import</h1>
-      <p>Turn your university timetable into calendar events.</p>
+      <h1>AI Studio</h1>
+      <p>Bring timetables and exams into one calendar.</p>
     </div>
+    <span class="pill">✧ AI powered</span>
   </header>
 
-  <div class="content">
-
-    <!-- UPLOAD SECTION -->
-
-    <section class="panel">
-
-      <div class="section-heading">
-        <div>
-          <span class="step">01 — UPLOAD</span>
-          <h2>Your timetable</h2>
-          <p>Upload a clear picture of your weekly university schedule.</p>
-        </div>
-        <span class="step-icon">✧</span>
-      </div>
-
-      <label class="upload-area">
-
-        <input
-          type="file"
-          accept="image/png,image/jpeg,image/webp"
-          (change)="onFileSelected($event)"
-          hidden
-        >
-
-        <ng-container *ngIf="!previewUrl">
-
-          <div class="upload-icon">＋</div>
-
-          <h3>Drop your timetable here</h3>
-
-          <p>Or click to browse your files</p>
-
-          <small>JPG, PNG or WEBP · Maximum 10 MB</small>
-
-        </ng-container>
-
-        <ng-container *ngIf="previewUrl">
-
-          <img [src]="previewUrl" alt="Timetable preview">
-
-          <h3>{{ selectedFile?.name }}</h3>
-
-          <p>Image ready for extraction</p>
-
-        </ng-container>
-
-      </label>
-
-      <button
-        class="primary-btn extract-btn"
-        [disabled]="!selectedFile || isLoading"
-        (click)="extract()">
-
-        {{ isLoading ? 'Analyzing timetable...' : '✧ Extract with AI' }}
-
-      </button>
-
-    </section>
-
-
-    <!-- SCHEDULE PERIOD -->
-
-    <section class="panel">
-
-      <span class="step">02 — SCHEDULE PERIOD</span>
-
-      <h2>When does this schedule apply?</h2>
-
-      <p>
-        Select the dates during which your weekly timetable is valid.
-      </p>
-
-      <div class="date-row">
-
-        <div>
-          <label>Start date</label>
-
-          <input
-            type="date"
-            [(ngModel)]="startDate"
-            name="startDate"
-          >
-        </div>
-
-        <div>
-          <label>End date</label>
-
-          <input
-            type="date"
-            [(ngModel)]="endDate"
-            name="endDate"
-          >
-        </div>
-
-      </div>
-
-      <small class="hint">
-        Example: September 1 to December 31 for the first semester.
-      </small>
-
-    </section>
-
-
-    <!-- ERROR AND SUCCESS -->
-
-    <div class="message error" *ngIf="errorMessage">
-      {{ errorMessage }}
-    </div>
-
-    <div class="message success" *ngIf="successMessage">
-      {{ successMessage }}
-    </div>
-
-
-    <!-- REVIEW SECTION -->
-
-    <section class="panel" *ngIf="classes.length > 0">
-
-      <div class="section-heading">
-
-        <div>
-          <span class="step">03 — REVIEW</span>
-          <h2>Extracted classes</h2>
-          <p>
-            Check the information carefully. You can edit or remove classes.
-          </p>
-        </div>
-
-        <span class="count">{{ classes.length }} classes</span>
-
-      </div>
-
-
-      <div class="class-list">
-
-        <div
-          class="class-card"
-          *ngFor="let item of classes; let i = index">
-
-          <div class="class-top">
-
-            <span class="class-number">
-              CLASS {{ i + 1 }}
-            </span>
-
-            <button
-              type="button"
-              class="remove-btn"
-              (click)="removeClass(i)">
-              Remove
-            </button>
-
-          </div>
-
-          <div class="fields">
-
-            <div class="field full">
-              <label>Subject</label>
-
-              <input
-                [(ngModel)]="item.subject"
-                name="subject-{{i}}"
-                placeholder="Subject name"
-              >
-            </div>
-
-            <div class="field">
-              <label>Weekday</label>
-
-              <select
-                [(ngModel)]="item.dayOfWeek"
-                name="day-{{i}}">
-
-                <option
-                  *ngFor="let day of weekdays"
-                  [value]="day">
-                  {{ day }}
-                </option>
-
-              </select>
-            </div>
-
-            <div class="field">
-              <label>Room</label>
-
-              <input
-                [(ngModel)]="item.room"
-                name="room-{{i}}"
-                placeholder="Room B14"
-              >
-            </div>
-
-            <div class="field">
-              <label>Start time</label>
-
-              <input
-                type="time"
-                [(ngModel)]="item.startTime"
-                name="start-{{i}}"
-              >
-            </div>
-
-            <div class="field">
-              <label>End time</label>
-
-              <input
-                type="time"
-                [(ngModel)]="item.endTime"
-                name="end-{{i}}"
-              >
-            </div>
-
-            <div class="field full">
-              <label>Teacher (optional)</label>
-
-              <input
-                [(ngModel)]="item.teacher"
-                name="teacher-{{i}}"
-                placeholder="Teacher name"
-              >
-            </div>
-
-          </div>
-
-        </div>
-
-      </div>
-
-      <button
-        class="secondary-btn"
-        type="button"
-        (click)="addClass()">
-        + Add another class
-      </button>
-
-      <div class="confirmation">
-
-        <div>
-          <h3>Ready to add your schedule?</h3>
-          <p>
-            Confirming will generate the corresponding events
-            throughout your selected date range.
-          </p>
-        </div>
-
-        <button
-          class="primary-btn"
-          [disabled]="isSaving"
-          (click)="confirm()">
-
-          {{ isSaving ? 'Saving...' : 'Confirm and add to calendar →' }}
-
+  <div class="columns">
+
+    <!-- ============ LEFT : AI TIMETABLE IMPORT ============ -->
+    <section class="col">
+
+      <h2>Turn any timetable into your calendar</h2>
+
+      <ol class="steps">
+        <li *ngFor="let s of steps; let i = index"
+            [class.on]="i <= currentStep"
+            [class.current]="i === currentStep">
+          <span class="bar"></span>
+          <span class="label">{{ s }}</span>
+        </li>
+      </ol>
+
+      <div class="message error" *ngIf="errorMessage">⚠ {{ errorMessage }}</div>
+      <div class="message success" *ngIf="successMessage">✓ {{ successMessage }}</div>
+
+      <!-- UPLOAD -->
+      <ng-container *ngIf="rows.length === 0">
+
+        <label class="dropzone"
+               [class.drag]="dragging"
+               [class.has-file]="previewUrl"
+               (dragover)="onDragOver($event)"
+               (dragleave)="onDragLeave()"
+               (drop)="onDrop($event)">
+
+          <input type="file"
+                 accept="image/png,image/jpeg,image/webp"
+                 (change)="onFileSelected($event)"
+                 hidden>
+
+          <ng-container *ngIf="!previewUrl">
+            <!-- little paper with coloured lines, like the mock-up -->
+            <svg class="doc-icon" viewBox="0 0 80 100" aria-hidden="true">
+              <g transform="rotate(-4 40 50)">
+                <rect x="6" y="6" width="68" height="88" fill="#fffdf5" stroke="#3a2c0f" stroke-width="3"/>
+                <rect x="18" y="24" width="44" height="7" fill="#ffd84d"/>
+                <rect x="18" y="38" width="44" height="7" fill="#cdbdf5"/>
+                <rect x="18" y="52" width="44" height="7" fill="#d9f26b"/>
+                <rect x="18" y="66" width="44" height="7" fill="#ff8a78"/>
+              </g>
+            </svg>
+            <strong>Drop a timetable image</strong>
+            <span class="formats">PNG · JPG · WEBP · max 10 MB</span>
+          </ng-container>
+
+          <ng-container *ngIf="previewUrl">
+            <img [src]="previewUrl" alt="Timetable preview">
+            <strong>{{ selectedFile?.name }}</strong>
+            <button type="button" class="link-btn" (click)="clearFile($event)">Remove</button>
+          </ng-container>
+
+        </label>
+
+        <button type="button"
+                class="btn blue"
+                [disabled]="!selectedFile || isLoading"
+                (click)="extract()">
+          {{ isLoading ? 'Reading your timetable…' : 'Extract with AI' }}
         </button>
 
+      </ng-container>
+
+      <!-- REVIEW -->
+      <div class="card review" *ngIf="rows.length > 0">
+
+        <div class="period">
+          <label>
+            <span>From</span>
+            <input type="date" [(ngModel)]="startDate" name="startDate">
+          </label>
+          <label>
+            <span>To</span>
+            <input type="date" [(ngModel)]="endDate" name="endDate">
+          </label>
+          <small>The weekly timetable repeats between these dates.</small>
+        </div>
+
+        <div class="table-wrap">
+          <table class="review-table">
+            <thead>
+              <tr>
+                <th></th>
+                <th>Title</th>
+                <th>Day</th>
+                <th>Time</th>
+                <th>Room</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let r of rows; let i = index" [class.off]="!r.include">
+                <td>
+                  <input type="checkbox" class="check" [(ngModel)]="r.include" [name]="'inc-' + i">
+                </td>
+                <td>
+                  <input class="cell" [(ngModel)]="r.subject" [name]="'subject-' + i" placeholder="Subject">
+                  <div class="tags" *ngIf="needsCheck(i) || isDuplicate(i)">
+                    <span class="tag lime" *ngIf="needsCheck(i)">Check time</span>
+                    <span class="tag lilac" *ngIf="isDuplicate(i)">Possible duplicate</span>
+                  </div>
+                </td>
+                <td>
+                  <select class="cell" [(ngModel)]="r.dayOfWeek" [name]="'day-' + i">
+                    <option *ngFor="let d of weekdays" [value]="d">{{ shortDay(d) }}</option>
+                  </select>
+                </td>
+                <td class="time-cell">
+                  <input class="cell" type="time" [(ngModel)]="r.startTime" [name]="'start-' + i">
+                  <span>–</span>
+                  <input class="cell" type="time" [(ngModel)]="r.endTime" [name]="'end-' + i">
+                </td>
+                <td>
+                  <input class="cell room" [(ngModel)]="r.room" [name]="'room-' + i" placeholder="—">
+                </td>
+                <td>
+                  <button type="button" class="x-btn" (click)="removeRow(i)" aria-label="Remove row">×</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <button type="button" class="link-btn add-row" (click)="addRow()">+ Add a class</button>
+
+        <div class="review-actions">
+          <button type="button" class="btn ghost" (click)="cancelReview()">Cancel</button>
+          <button type="button"
+                  class="btn blue"
+                  [disabled]="isSaving || includedCount === 0"
+                  (click)="confirm()">
+            {{ isSaving ? 'Importing…' : 'Import (' + includedCount + ')' }}
+          </button>
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- ============ RIGHT : STUDY PLANNER ============ -->
+    <section class="col">
+
+      <h2>Plan my study week</h2>
+
+      <div class="card">
+
+        <p class="card-label">Choose exams</p>
+
+        <ul class="task-list">
+          <li *ngFor="let t of tasks">
+            <label class="task-row">
+              <input type="checkbox" class="check" [(ngModel)]="t.selected" [name]="t.id" (change)="plan = []">
+              <span class="task-title">{{ t.title }}</span>
+              <span class="due" *ngIf="t.due" [ngClass]="urgency(t.due)">{{ daysLeft(t.due) }}d</span>
+              <span class="due none" *ngIf="!t.due">—</span>
+            </label>
+            <button type="button" class="x-btn" *ngIf="t.custom" (click)="removeTask(t)" aria-label="Remove task">×</button>
+          </li>
+          <li class="empty" *ngIf="tasks.length === 0">
+            No upcoming exams in your calendar yet. Add your own below.
+          </li>
+        </ul>
+
+        <!-- write your own -->
+        <div class="add-task">
+          <input class="text-input"
+                 [(ngModel)]="newTaskTitle"
+                 name="newTask"
+                 placeholder="Or type a subject (e.g. Chemistry lab)"
+                 (keyup.enter)="addCustomTask()">
+          <input class="text-input date" type="date" [(ngModel)]="newTaskDue" name="newTaskDue" title="Due date (optional)">
+          <button type="button" class="btn small" (click)="addCustomTask()">Add</button>
+        </div>
+
+        <!-- hours -->
+        <p class="card-label">Study time per task: {{ totalHours }}h</p>
+        <input type="range"
+               class="slider"
+               min="1" max="30" step="1"
+               [(ngModel)]="totalHours"
+               name="totalHours"
+               (input)="plan = []">
+
+        <!-- session length -->
+        <p class="card-label">Split into sessions of</p>
+        <div class="seg">
+          <button type="button"
+                  *ngFor="let o of sessionOptions"
+                  [class.active]="sessionHours === o.hours"
+                  (click)="sessionHours = o.hours; plan = []">
+            {{ o.label }}
+          </button>
+        </div>
+        <p class="split-note">
+          → <strong>{{ sessionCount }} days</strong> · {{ sessionSummary }}
+        </p>
+
+        <!-- when -->
+        <div class="when">
+          <label>
+            <span class="card-label">Start on</span>
+            <input class="text-input" type="date" [(ngModel)]="plannerStart" name="plannerStart" (change)="plan = []">
+          </label>
+          <label>
+            <span class="card-label">Same time daily</span>
+            <input class="text-input" type="time" [(ngModel)]="preferredTime" name="preferredTime" (change)="plan = []">
+          </label>
+        </div>
+
+        <label class="inline-check">
+          <input type="checkbox" class="check" [(ngModel)]="skipWeekends" name="skipWeekends" (change)="plan = []">
+          Skip weekends
+        </label>
+
+        <div class="message error" *ngIf="plannerError">⚠ {{ plannerError }}</div>
+
+        <button type="button" class="btn blue" (click)="buildPlan()">Preview schedule</button>
+
+      </div>
+
+      <!-- PREVIEW -->
+      <div class="card" *ngIf="plan.length > 0">
+
+        <!-- chain of days with arrows -->
+        <div class="chain" aria-label="Study days">
+          <ng-container *ngFor="let c of dayChips; let last = last">
+            <div class="brick">
+              <span class="stud-row"><i></i><i></i></span>
+              <small>{{ c.weekday }}</small>
+              <strong>{{ c.day }}</strong>
+              <em>{{ c.time }}</em>
+            </div>
+            <span class="arrow" *ngIf="!last">→</span>
+          </ng-container>
+        </div>
+
+        <p class="plan-total">{{ plan.length }} sessions · {{ planHours }}h in total</p>
+
+        <div class="message warn" *ngIf="planWarning">⚠ {{ planWarning }}</div>
+
+        <ul class="plan-list">
+          <li *ngFor="let s of plan" [class.late]="s.late">
+            <span class="sq"></span>
+            <span class="plan-title">{{ s.title }} <small>{{ s.index }}/{{ s.of }}</small></span>
+            <span class="plan-when">{{ sessionLabel(s) }}</span>
+          </li>
+        </ul>
+
+        <button type="button" class="btn lime" [disabled]="isAdding" (click)="addPlanToCalendar()">
+          {{ isAdding ? 'Adding…' : 'Add to calendar' }}
+        </button>
+
+      </div>
+
+      <div class="card success-card" *ngIf="plannerSuccess">
+        <div class="message success">✓ {{ plannerSuccess }}</div>
+        <button type="button" class="btn lime" (click)="openCalendar()">Open my calendar</button>
       </div>
 
     </section>
 
   </div>
-
 </div>

@@ -1,1 +1,70 @@
-/* You can add global styles to this file, and also import other style files */
+:root {
+  color-scheme: light;
+  --bg: #f7f5ef;
+  --panel: #fffefa;
+  --ink: #29261e;
+  --muted: #777267;
+  --line: #e8e2d4;
+  --line-strong: #d7c89b;
+  --yellow: #ffd84d;
+  --yellow-deep: #e9b91e;
+  --yellow-soft: #fff1b8;
+  --yellow-pale: #fff8dc;
+  --orange: #d97732;
+  --coral: #ff9a87;
+  --mint: #c8edcf;
+  --lilac: #d9cef8;
+  --sky: #bde4f5;
+  --lime: #d9f26b;
+  --brick-shadow: 0 4px 0 rgba(112, 82, 13, .18);
+  --brick-shadow-sm: 0 2px 0 rgba(112, 82, 13, .14);
+  --font-body: "DM Sans", sans-serif;
+  --font-head: "Space Grotesk", sans-serif;
+  --font-num: "Fredoka", sans-serif;
+
+  font-family: var(--font-body);
+  color: var(--ink);
+  background: var(--bg);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 320px;
+  min-height: 100%;
+  background: var(--bg);
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+  background: var(--bg);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  color: inherit;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid var(--yellow-deep);
+  outline-offset: 2px;
+}
