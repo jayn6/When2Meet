@@ -143,7 +143,7 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 }
 .btn:active:not(:disabled) { transform: translateY(3px); box-shadow: none !important; }
 
-.btn.blue { background: #3b5bfd; color: #fff; box-shadow: 0 4px 0 #2a40c2; }
+.btn.blue { background: #bde4f5; color: #232323; box-shadow: 0 4px 0 #99b9c7; }
 .btn.lime { background: var(--lime); box-shadow: 0 4px 0 #a9c93a; }
 .btn.ghost { background: var(--panel); border: 2px solid var(--ink); }
 .btn.small { padding: 9px 14px; background: var(--yellow); box-shadow: 0 3px 0 var(--yellow-deep); }

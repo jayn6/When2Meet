@@ -242,7 +242,7 @@ export class CalendarComponent implements OnInit {
         },
         error: (error) => {
           console.error('Could not save event:', error);
-          alert('Could not save the event.');
+          alert(error?.error?.error ?? 'Could not save the event.');
         }
       });
 

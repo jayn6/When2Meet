@@ -37,6 +37,11 @@ public class EventController {
             throw new IllegalArgumentException("Invalid event dates");
         }
 
+        if (repository.existsByStartDateTimeLessThanAndEndDateTimeGreaterThan(
+                event.getEndDateTime(), event.getStartDateTime())) {
+            throw new IllegalArgumentException("You already have an event at this time.");
+        }
+
         return repository.save(event);
     }
 

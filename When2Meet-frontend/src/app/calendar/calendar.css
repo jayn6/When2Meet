@@ -123,11 +123,11 @@ button { cursor: pointer; border: none; }
 .calendar-legend { display: flex; flex-wrap: wrap; gap: 18px; margin-bottom: 16px; }
 .legend-item { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; color: var(--muted); }
 .legend-color { width: 14px; height: 14px; border-radius: 5px; border: 2px solid rgba(58, 44, 15, .18); }
-.class-color { background: var(--yellow); }
+.class-color { background: var(--sky); }
 .exam-color { background: var(--coral); }
 .personal-color { background: var(--mint); }
 .assignment-color { background: var(--lilac); }
-.study-color { background: var(--sky); }
+.study-color { background: var(--yellow); }
 
 /* ============ GRID ============ */
 
@@ -227,11 +227,11 @@ button { cursor: pointer; border: none; }
 .event-item small { flex-shrink: 0; font-weight: 500; opacity: .7; }
 .event-item:hover { transform: translateY(-2px); }
 
-.event-item.class { background: var(--yellow); }
+.event-item.class { background: var(--sky); }
 .event-item.exam { background: var(--coral); }
 .event-item.personal { background: var(--mint); }
 .event-item.assignment { background: var(--lilac); }
-.event-item.study { background: var(--sky); }
+.event-item.study { background: var(--yellow); }
 
 .calendar-grid.week .calendar-cell { min-height: min(440px, 62vh); }
 

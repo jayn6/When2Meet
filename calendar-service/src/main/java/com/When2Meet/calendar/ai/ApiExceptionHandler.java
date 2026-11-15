@@ -22,4 +22,9 @@ public class ApiExceptionHandler {
         return ResponseEntity.status(503).body(
             Map.of("error", "The AI service is busy or too slow. Please try again in a minute."));
     }
+
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<Map<String, String>> conflict(IllegalStateException e) {
+        return ResponseEntity.status(409).body(Map.of("error", e.getMessage()));
+    }
 }
