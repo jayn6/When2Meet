@@ -1,0 +1,133 @@
+<div class="auth-page">
+
+  <!-- BRAND PANEL -->
+  <aside class="auth-aside">
+
+    <div class="aside-brand">
+          <div class="sidebar-logo">
+      <img
+        src="images/day10.png"
+        alt="When2Meet Logo"
+        class="logo-image"
+      />
+    </div>
+
+      <span>When2Meet</span>
+    </div>
+
+    <div class="aside-copy">
+      <h2>Your timetable, your calendar, your people.</h2>
+      <p>Import your schedule, plan your study sessions and share only what you choose.</p>
+    </div>
+
+    <div class="aside-cards" aria-hidden="true">
+      <div class="aside-date">12</div>
+      <div class="mini-event"><span>Algorithms lab</span><small>10:30</small></div>
+      <div class="mini-event exam"><span>Calculus quiz</span><small>08:30</small></div>
+      <div class="mini-event shared"><span>Study group</span><small>16:00</small></div>
+      <div class="mini-event assignment"><span>Lab report due</span><small>23:59</small></div>
+    </div>
+
+  </aside>
+
+  <!-- FORM -->
+  <main class="auth-main">
+
+    <div class="auth-card">
+
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true"></div>
+        <span>When2Meet</span>
+      </div>
+
+      <div class="auth-heading">
+        <span class="eyebrow">Welcome back</span>
+        <h1>Log in</h1>
+        <p>Continue organizing your university life.</p>
+      </div>
+
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+
+        <!-- EMAIL -->
+        <div class="form-group">
+
+          <label for="email">Email address</label>
+
+          <input
+            id="email"
+            type="email"
+            formControlName="email"
+            autocomplete="email"
+            placeholder="you@example.com"
+          />
+
+          <small class="error"
+            *ngIf="f['email'].touched && f['email'].errors?.['required']">
+            Email is required.
+          </small>
+
+          <small class="error"
+            *ngIf="f['email'].touched && f['email'].errors?.['email']">
+            Enter a valid email address.
+          </small>
+
+        </div>
+
+        <!-- PASSWORD -->
+        <div class="form-group">
+
+          <label for="password">Password</label>
+
+          <div class="password-wrapper">
+
+            <input
+              id="password"
+              [type]="showPassword ? 'text' : 'password'"
+              formControlName="password"
+              autocomplete="current-password"
+              placeholder="Enter your password"
+            />
+
+            <button
+              type="button"
+              class="toggle-password"
+              (click)="showPassword = !showPassword">
+              {{ showPassword ? 'Hide' : 'Show' }}
+            </button>
+
+          </div>
+
+          <small class="error"
+            *ngIf="f['password'].touched && f['password'].errors?.['required']">
+            Password is required.
+          </small>
+
+        </div>
+
+        <!-- ERROR -->
+        <div class="server-error" *ngIf="errorMessage">
+          {{ errorMessage }}
+        </div>
+
+        <!-- SUBMIT -->
+        <button
+          type="submit"
+          class="submit-btn"
+          [disabled]="loading">
+
+          {{ loading ? 'Logging in...' : 'Log in' }}
+
+        </button>
+
+      </form>
+
+      <div class="auth-footer">
+        Don't have an account?
+        <a routerLink="/signup">Create an account</a>
+      </div>
+
+    </div>
+
+  </main>
+
+</div>

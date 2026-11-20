@@ -1,12 +1,32 @@
 import { Routes } from '@angular/router';
-import { CalendarComponent } from './calendar/calendar';
-import { AiStudioComponent } from './ai-studio/ai-studio';
 import { AppLayoutComponent } from './layout/app-layout';
-
+import { LoginComponent } from './auth/login/login.component';
+import { SignupComponent } from './auth/signup/signup.component';
+import { authGuard } from './guards/auth.guard';
+import { FriendsComponent } from './friends/friends.component';
 export const routes: Routes = [
+  {
+  path: 'friends',
+  component: FriendsComponent,
+  canActivate: [authGuard]
+},
+  {
+    path: '',
+    redirectTo: 'login',
+    pathMatch: 'full'
+  },
+  {
+    path: 'login',
+    component: LoginComponent
+  },
+  {
+    path: 'signup',
+    component: SignupComponent
+  },
   {
     path: '',
     component: AppLayoutComponent,
+    canActivate: [authGuard],
     children: [
       {
         path: '',
@@ -16,19 +36,17 @@ export const routes: Routes = [
       {
         path: 'calendar',
         loadComponent: () =>
-          import('./calendar/calendar')
-            .then(m => m.CalendarComponent)
+          import('./calendar/calendar').then(m => m.CalendarComponent)
       },
       {
         path: 'ai-studio',
         loadComponent: () =>
-          import('./ai-studio/ai-studio')
-            .then(m => m.AiStudioComponent)
+          import('./ai-studio/ai-studio').then(m => m.AiStudioComponent)
       }
     ]
   },
   {
     path: '**',
-    redirectTo: 'calendar'
+    redirectTo: 'login'
   }
 ];
