@@ -5,7 +5,23 @@
   color: var(--ink);
   font-family: var(--font-body);
 }
+/* floating message so it is never hidden under the top bar or scrolled away */
+.alert.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  max-width: min(560px, 92vw);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.18);
+}
 
+.alert.toast button { margin-inline-start: auto; }
+
+button:disabled { opacity: 0.55; cursor: not-allowed; }
 .friends-page {
   width: 100%;
   max-width: 1440px;

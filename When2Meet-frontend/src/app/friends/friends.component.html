@@ -9,23 +9,18 @@
     </div>
 
     <div class="friends-count">
-      <strong>{{ friends.length }}</strong>
+      <strong>{{ friends().length }}</strong>
       <span>Friends</span>
     </div>
   </div>
 
-  <!-- MESSAGES -->
-  <div class="alert success" *ngIf="successMessage">
-    {{ successMessage }}
-    <button type="button" (click)="clearMessages()">×</button>
+  <!-- MESSAGE (floating, always visible) -->
+  <div class="alert toast" *ngIf="notice() as n" [ngClass]="n.type" role="status">
+    {{ n.text }}
+    <button type="button" (click)="dismiss()" aria-label="Dismiss">×</button>
   </div>
 
-  <div class="alert error" *ngIf="errorMessage">
-    {{ errorMessage }}
-    <button type="button" (click)="clearMessages()">×</button>
-  </div>
-
-  <!-- SEARCH SECTION -->
+  <!-- SEARCH -->
   <section class="friends-section search-section">
 
     <div class="section-heading">
@@ -37,76 +32,47 @@
 
     <div class="search-box">
       <span class="search-icon">⌕</span>
-
-      <input
-        type="text"
-        [formControl]="searchControl"
-        placeholder="Search students..."
-      />
+      <input type="text" [formControl]="searchControl" placeholder="Search students..." />
     </div>
 
-    <p class="hint" *ngIf="searchControl.value && searchControl.value.trim().length < 2">
-      Enter at least 2 characters.
-    </p>
+    <p class="hint" *ngIf="query().length === 1">Enter at least 2 characters.</p>
+    <p class="hint" *ngIf="searching()">Searching...</p>
 
-    <p class="hint" *ngIf="searchLoading">
-      Searching...
-    </p>
-
-    <div
-      class="empty-state search-empty"
-      *ngIf="
-        searchControl.value &&
-        searchControl.value.trim().length >= 2 &&
-        !searchLoading &&
-        searchResults.length === 0
-      ">
+    <div class="empty-state search-empty"
+         *ngIf="query().length >= 2 && !searching() && !searchFailed() && results().length === 0">
       No students found.
     </div>
 
-    <div
-      class="empty-state search-empty"
-      *ngIf="
-        !searchControl.value?.trim() &&
-        !searchLoading &&
-        searchResults.length === 0 &&
-        !errorMessage
-      ">
+    <div class="empty-state search-empty"
+         *ngIf="!query() && !searching() && !searchFailed() && results().length === 0">
       No other students have signed up yet.
     </div>
 
-    <div class="user-list" *ngIf="searchResults.length > 0">
+    <div class="user-list" *ngIf="results().length > 0">
 
-      <div class="user-card" *ngFor="let user of searchResults">
+      <div class="user-card" *ngFor="let user of results(); trackBy: trackById">
 
-        <div class="avatar">
-          {{ user.fullName.charAt(0).toUpperCase() }}
-        </div>
+        <div class="avatar">{{ user.fullName.charAt(0).toUpperCase() }}</div>
 
         <div class="user-info">
           <h3>{{ user.fullName }}</h3>
           <p>{{ user.email }}</p>
         </div>
 
-        <button
-          *ngIf="isFriend(user.id)"
-          class="status-btn"
-          disabled>
+        <button *ngIf="friendIds().has(user.id)" class="status-btn" disabled>
           Friends
         </button>
 
-        <button
-          *ngIf="!isFriend(user.id) && isRequestSent(user.id)"
-          class="status-btn pending-btn"
-          disabled>
+        <button *ngIf="!friendIds().has(user.id) && sentIds().has(user.id)"
+                class="status-btn pending-btn" disabled>
           Requested
         </button>
 
-        <button
-          *ngIf="!isFriend(user.id) && !isRequestSent(user.id)"
-          class="add-btn"
-          (click)="addFriend(user)">
-          + Add friend
+        <button *ngIf="!friendIds().has(user.id) && !sentIds().has(user.id)"
+                class="add-btn"
+                [disabled]="busy()"
+                (click)="sendRequest(user)">
+          {{ busyKey() === 'add-' + user.id ? 'Sending...' : '+ Add friend' }}
         </button>
 
       </div>
@@ -124,49 +90,40 @@
         <p>Students who want to connect with you.</p>
       </div>
 
-      <span class="count-badge">
-        {{ receivedRequests.length }}
-      </span>
+      <span class="count-badge">{{ received().length }}</span>
     </div>
 
-    <div class="empty-state" *ngIf="receivedRequests.length === 0">
+    <div class="loading-state" *ngIf="requestsLoading()">Loading friend requests...</div>
+
+    <div class="alert error" *ngIf="requestsError()">{{ requestsError() }}</div>
+
+    <div class="empty-state"
+         *ngIf="!requestsLoading() && !requestsError() && received().length === 0">
       <div class="empty-icon">✉</div>
       <h3>No new requests</h3>
       <p>When someone sends you a request, it will appear here.</p>
     </div>
 
-    <div class="user-list" *ngIf="receivedRequests.length > 0">
+    <div class="user-list" *ngIf="received().length > 0">
 
-      <div
-        class="user-card request-card"
-        *ngFor="let request of receivedRequests">
+      <div class="user-card request-card" *ngFor="let request of received(); trackBy: trackById">
 
-        <div class="avatar">
-          {{ request.fullName.charAt(0).toUpperCase() }}
-        </div>
+        <div class="avatar">{{ request.fullName.charAt(0).toUpperCase() }}</div>
 
         <div class="user-info">
           <h3>{{ request.fullName }}</h3>
           <p>{{ request.email }}</p>
-          <span class="request-date">
-            Sent {{ request.createdAt | date:'mediumDate' }}
-          </span>
+          <span class="request-date">Sent {{ request.createdAt | date:'mediumDate' }}</span>
         </div>
 
         <div class="request-actions">
-
-          <button
-            class="accept-btn"
-            (click)="acceptRequest(request)">
-            Accept
+          <button class="accept-btn" [disabled]="busy()" (click)="accept(request)">
+            {{ busyKey() === 'accept-' + request.id ? 'Accepting...' : 'Accept' }}
           </button>
 
-          <button
-            class="reject-btn"
-            (click)="rejectRequest(request)">
-            Reject
+          <button class="reject-btn" [disabled]="busy()" (click)="reject(request)">
+            {{ busyKey() === 'reject-' + request.id ? 'Rejecting...' : 'Reject' }}
           </button>
-
         </div>
 
       </div>
@@ -184,44 +141,30 @@
         <p>Your university connections.</p>
       </div>
 
-      <span class="count-badge">
-        {{ friends.length }}
-      </span>
+      <span class="count-badge">{{ friends().length }}</span>
     </div>
 
-    <div class="loading-state" *ngIf="loading">
-      Loading friends...
-    </div>
+    <div class="loading-state" *ngIf="friendsLoading()">Loading friends...</div>
 
-    <div
-      class="empty-state"
-      *ngIf="!loading && friends.length === 0">
-
+    <div class="empty-state" *ngIf="!friendsLoading() && friends().length === 0">
       <div class="empty-icon">♧</div>
-
       <h3>No friends yet</h3>
-
       <p>Search for students above to start connecting.</p>
-
     </div>
 
-    <div class="user-list" *ngIf="!loading && friends.length > 0">
+    <div class="user-list" *ngIf="!friendsLoading() && friends().length > 0">
 
-      <div class="user-card" *ngFor="let friend of friends">
+      <div class="user-card" *ngFor="let friend of friends(); trackBy: trackById">
 
-        <div class="avatar">
-          {{ friend.fullName.charAt(0).toUpperCase() }}
-        </div>
+        <div class="avatar">{{ friend.fullName.charAt(0).toUpperCase() }}</div>
 
         <div class="user-info">
           <h3>{{ friend.fullName }}</h3>
           <p>{{ friend.email }}</p>
         </div>
 
-        <button
-          class="unfriend-btn"
-          (click)="unfriend(friend)">
-          Unfriend
+        <button class="unfriend-btn" [disabled]="busy()" (click)="unfriend(friend)">
+          {{ busyKey() === 'unfriend-' + friend.id ? 'Removing...' : 'Unfriend' }}
         </button>
 
       </div>

@@ -1,250 +1,271 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  OnInit,
+  computed,
+  inject,
+  signal
+} from '@angular/core';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-
 import {
-  FriendshipService,
-  Friend,
-  FriendRequest
-} from '../services/friendship.service';
-
-import {
+  EMPTY,
+  Observable,
+  TimeoutError,
+  catchError,
   debounceTime,
   distinctUntilChanged,
-  switchMap,
-  startWith,
-  catchError,
+  filter,
+  finalize,
+  map,
   of,
-  Subscription
+  startWith,
+  switchMap,
+  timeout,
+  timer
 } from 'rxjs';
+
+import { Friend, FriendRequest, FriendshipService } from '../services/friendship.service';
+
+type Notice = { type: 'success' | 'error'; text: string };
+
+const TIMEOUT_MS = 10_000;
+const POLL_MS = 15_000;
 
 @Component({
   selector: 'app-friends',
   standalone: true,
-  imports: [
-    CommonModule,
-    ReactiveFormsModule
-  ],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './friends.component.html',
-  styleUrl: './friends.component.css'
+  styleUrl: './friends.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class FriendsComponent implements OnInit, OnDestroy {
+export class FriendsComponent implements OnInit {
 
-  friends: Friend[] = [];
+  private readonly service = inject(FriendshipService);
+  private readonly destroyRef = inject(DestroyRef);
 
-  receivedRequests: FriendRequest[] = [];
-  sentRequests: FriendRequest[] = [];
+  // ---- search ----
+  readonly searchControl = new FormControl('', { nonNullable: true });
+  private readonly query$ = this.searchControl.valueChanges.pipe(
+    startWith(''),
+    map(value => value.trim())
+  );
+  readonly query = toSignal(this.query$, { initialValue: '' });
 
-  searchResults: Friend[] = [];
+  // ---- data ----
+  readonly friends = signal<Friend[]>([]);
+  readonly received = signal<FriendRequest[]>([]);
+  readonly sent = signal<FriendRequest[]>([]);
+  readonly results = signal<Friend[]>([]);
 
-  searchControl = new FormControl('');
+  readonly friendIds = computed(() => new Set(this.friends().map(f => f.id)));
+  readonly sentIds = computed(() => new Set(this.sent().map(r => r.userId)));
 
-  loading = false;
-  searchLoading = false;
+  // ---- state ----
+  readonly friendsLoading = signal(true);
+  readonly requestsLoading = signal(true);
+  readonly searching = signal(false);
+  readonly searchFailed = signal(false);
+  readonly requestsError = signal('');
+  readonly notice = signal<Notice | null>(null);
 
-  errorMessage = '';
-  successMessage = '';
+  /** key of the action running now, e.g. "accept-7". Used to block double clicks. */
+  readonly busyKey = signal<string | null>(null);
+  readonly busy = computed(() => this.busyKey() !== null);
 
-  private searchSubscription?: Subscription;
-
-  constructor(
-    private friendshipService: FriendshipService
-  ) {}
+  private noticeTimer?: ReturnType<typeof setTimeout>;
 
   ngOnInit(): void {
-
-    this.loadAll();
-
-    this.searchSubscription = this.searchControl.valueChanges
-      .pipe(
-        startWith(''),
-        debounceTime(350),
-        distinctUntilChanged(),
-        switchMap(query => {
-
-          const value = (query || '').trim();
-
-          if (value.length === 1) {
-            this.searchResults = [];
-            this.searchLoading = false;
-            return of([]);
-          }
-
-          this.searchLoading = true;
-
-          return this.friendshipService.searchUsers(value).pipe(
-            catchError(error => {
-              this.errorMessage = error.status === 0
-                ? 'Cannot connect to the server. Check that the backend is running.'
-                : error.error?.detail
-                  || error.error?.message
-                  || 'Could not search students.';
-              return of([]);
-            })
-          );
-        })
-      )
-      .subscribe(results => {
-
-        this.searchResults = results;
-        this.searchLoading = false;
-
-      });
+    this.refresh();
+    this.watchSearch();
+    this.watchRequests();
   }
 
-  ngOnDestroy(): void {
-    this.searchSubscription?.unsubscribe();
+  trackById(_: number, item: { id: number }): number {
+    return item.id;
   }
 
-  // LOAD ALL DATA
-  loadAll(): void {
+  // ---------------- loading ----------------
 
-    this.loading = true;
-    this.errorMessage = '';
+  refresh(): void {
 
-    this.friendshipService.getFriends().subscribe({
-      next: data => {
-        this.friends = data;
-        this.loading = false;
-      },
-      error: () => {
-        this.errorMessage = 'Could not load your friends.';
-        this.loading = false;
-      }
+    this.service.getFriends().pipe(
+      timeout(TIMEOUT_MS),
+      finalize(() => this.friendsLoading.set(false))
+    ).subscribe({
+      next: list => this.friends.set(list),
+      error: err => this.notify('error', this.errorText(err, 'Could not load your friends.'))
     });
 
-    this.friendshipService.getReceivedRequests().subscribe({
-      next: data => this.receivedRequests = data,
-      error: () => this.errorMessage = 'Could not load friend requests.'
+    this.service.getReceivedRequests().pipe(
+      timeout(TIMEOUT_MS),
+      finalize(() => this.requestsLoading.set(false))
+    ).subscribe({
+      next: list => this.setReceived(list),
+      error: err => this.requestsError.set(this.errorText(err, 'Could not load friend requests.'))
     });
 
-    this.friendshipService.getSentRequests().subscribe({
-      next: data => this.sentRequests = data
+    this.service.getSentRequests().pipe(timeout(TIMEOUT_MS)).subscribe({
+      next: list => this.sent.set(list),
+      error: () => { /* the buttons still work, the server answers 409 if already sent */ }
     });
   }
 
-  // SEND REQUEST
-  addFriend(user: Friend): void {
+  private watchSearch(): void {
+    this.query$.pipe(
+      debounceTime(350),
+      distinctUntilChanged(),
+      switchMap(query => {
+        this.searchFailed.set(false);
 
-    this.clearMessages();
+        if (query.length === 1) {
+          return of<Friend[]>([]);
+        }
 
-    this.friendshipService.sendRequest(user.id).subscribe({
+        this.searching.set(true);
 
-      next: () => {
-
-        this.successMessage =
-          `Friend request sent to ${user.fullName}.`;
-
-        this.searchResults = this.searchResults.filter(
-          result => result.id !== user.id
+        return this.service.searchUsers(query).pipe(
+          timeout(TIMEOUT_MS),
+          catchError(err => {
+            this.searchFailed.set(true);
+            this.notify('error', this.errorText(err, 'Could not search students.'));
+            return of<Friend[]>([]);
+          })
         );
-
-        this.loadAll();
-      },
-
-      error: error => {
-
-        this.errorMessage =
-          error.error?.message || 'Could not send friend request.';
-      }
+      }),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(list => {
+      this.results.set(list);
+      this.searching.set(false);
     });
   }
 
-  // ACCEPT REQUEST
-  acceptRequest(request: FriendRequest): void {
-
-    this.clearMessages();
-
-    this.friendshipService.acceptRequest(request.id).subscribe({
-
-      next: () => {
-
-        this.successMessage =
-          `You are now friends with ${request.fullName}.`;
-
-        this.loadAll();
-      },
-
-      error: error => {
-
-        this.errorMessage =
-          error.error?.message || 'Could not accept request.';
-      }
-    });
+  /** Light polling so new requests show up without a reload. */
+  private watchRequests(): void {
+    timer(POLL_MS, POLL_MS).pipe(
+      filter(() => !document.hidden),
+      switchMap(() => this.service.getReceivedRequests().pipe(
+        timeout(TIMEOUT_MS),
+        catchError(() => EMPTY)
+      )),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(list => this.setReceived(list));
   }
 
-  // REJECT REQUEST
-  rejectRequest(request: FriendRequest): void {
+  /** Only replace the list when it really changed, so the cards are not rebuilt. */
+  private setReceived(list: FriendRequest[]): void {
+    const current = this.received();
+    const same = list.length === current.length
+      && list.every((request, i) => request.id === current[i].id);
 
-    this.clearMessages();
-
-    this.friendshipService.rejectRequest(request.id).subscribe({
-
-      next: () => {
-
-        this.successMessage =
-          `Request from ${request.fullName} rejected.`;
-
-        this.loadAll();
-      },
-
-      error: error => {
-
-        this.errorMessage =
-          error.error?.message || 'Could not reject request.';
-      }
-    });
+    if (!same) {
+      this.received.set(list);
+    }
+    this.requestsError.set('');
   }
 
-  // UNFRIEND
-  unfriend(friend: Friend): void {
+  // ---------------- actions ----------------
 
-    const confirmed = window.confirm(
-      `Are you sure you want to remove ${friend.fullName} from your friends?`
+  sendRequest(user: Friend): void {
+    this.run(
+      `add-${user.id}`,
+      this.service.sendRequest(user.id),
+      `Friend request sent to ${user.fullName}.`,
+      'Could not send friend request.'
     );
+  }
 
-    if (!confirmed) {
+  accept(request: FriendRequest): void {
+    this.run(
+      `accept-${request.id}`,
+      this.service.acceptRequest(request.id),
+      `You are now friends with ${request.fullName}.`,
+      'Could not accept the request.',
+      () => this.received.update(list => list.filter(r => r.id !== request.id))
+    );
+  }
+
+  reject(request: FriendRequest): void {
+    this.run(
+      `reject-${request.id}`,
+      this.service.rejectRequest(request.id),
+      `Request from ${request.fullName} rejected.`,
+      'Could not reject the request.',
+      () => this.received.update(list => list.filter(r => r.id !== request.id))
+    );
+  }
+
+  unfriend(friend: Friend): void {
+    if (!window.confirm(`Remove ${friend.fullName} from your friends?`)) {
       return;
     }
 
-    this.clearMessages();
+    this.run(
+      `unfriend-${friend.id}`,
+      this.service.unfriend(friend.id),
+      `${friend.fullName} was removed from your friends.`,
+      'Could not remove friend.',
+      () => this.friends.update(list => list.filter(f => f.id !== friend.id))
+    );
+  }
 
-    this.friendshipService.unfriend(friend.id).subscribe({
+  /** One place for: block double clicks, timeout, message, refresh. */
+  private run(
+    key: string,
+    call$: Observable<unknown>,
+    okText: string,
+    failText: string,
+    onSuccess?: () => void
+  ): void {
 
+    if (this.busy()) {
+      return;
+    }
+
+    this.busyKey.set(key);
+
+    call$.pipe(
+      timeout(TIMEOUT_MS),
+      finalize(() => this.busyKey.set(null))
+    ).subscribe({
       next: () => {
-
-        this.successMessage =
-          `${friend.fullName} was removed from your friends.`;
-
-        this.loadAll();
+        onSuccess?.();
+        this.notify('success', okText);
+        this.refresh();
       },
-
-      error: error => {
-
-        this.errorMessage =
-          error.error?.message || 'Could not remove friend.';
-      }
+      error: err => this.notify('error', this.errorText(err, failText))
     });
   }
 
-  // CHECK IF REQUEST IS ALREADY SENT
-  isRequestSent(userId: number): boolean {
+  // ---------------- messages ----------------
 
-    return this.sentRequests.some(
-      request => request.userId === userId
-    );
+  dismiss(): void {
+    this.notice.set(null);
   }
 
-  // CHECK IF ALREADY FRIENDS
-  isFriend(userId: number): boolean {
-
-    return this.friends.some(
-      friend => friend.id === userId
-    );
+  private notify(type: Notice['type'], text: string): void {
+    clearTimeout(this.noticeTimer);
+    this.notice.set({ type, text });
+    this.noticeTimer = setTimeout(() => this.notice.set(null), 5000);
   }
 
-  clearMessages(): void {
-    this.errorMessage = '';
-    this.successMessage = '';
+  private errorText(err: unknown, fallback: string): string {
+    if (err instanceof TimeoutError) {
+      return 'The server is taking too long to answer. Try again.';
+    }
+
+    const e = err as HttpErrorResponse;
+
+    if (e.status === 0) {
+      return 'Cannot reach the server. Check that the backend is running and that CORS allows this request.';
+    }
+    if (e.status === 401 || e.status === 403) {
+      return 'Your session has expired. Please log in again.';
+    }
+    return e.error?.message || e.error?.detail || fallback;
   }
 }

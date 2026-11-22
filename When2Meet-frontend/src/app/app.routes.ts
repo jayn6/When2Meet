@@ -6,11 +6,6 @@ import { authGuard } from './guards/auth.guard';
 import { FriendsComponent } from './friends/friends.component';
 export const routes: Routes = [
   {
-  path: 'friends',
-  component: FriendsComponent,
-  canActivate: [authGuard]
-},
-  {
     path: '',
     redirectTo: 'login',
     pathMatch: 'full'
@@ -42,6 +37,10 @@ export const routes: Routes = [
         path: 'ai-studio',
         loadComponent: () =>
           import('./ai-studio/ai-studio').then(m => m.AiStudioComponent)
+      },
+      {
+        path: 'friends',
+        component: FriendsComponent
       }
     ]
   },

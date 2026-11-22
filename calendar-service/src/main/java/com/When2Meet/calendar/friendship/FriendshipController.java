@@ -5,7 +5,8 @@ import com.When2Meet.calendar.user.User;
 import com.When2Meet.calendar.user.UserRepository;
 import com.When2Meet.calendar.friendship.dto.FriendUserResponse;
 import com.When2Meet.calendar.friendship.dto.FriendRequestResponse;
-
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
