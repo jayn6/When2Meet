@@ -367,3 +367,36 @@ button { cursor: pointer; border: none; }
   .form-row { grid-template-columns: 1fr; gap: 0; }
   .modal-actions { flex-wrap: wrap; }
 }
+
+.shared {
+  box-shadow: inset 4px 0 0 #252525;   /* blue stripe on the left edge */
+}
+.friend {
+  outline: 1.5px dashed #252525;       /* dashed outline: not my event */
+  outline-offset: -1px;
+}
+.shared-badge {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 5px;
+  vertical-align: middle;
+}
+.shared-badge svg {
+  width: 13px;
+  height: 13px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.owner-name {
+  margin-left: 2px;
+  margin-right: 4px;
+  font-weight: 700;
+}
+
+.shared-badge[hidden],
+.owner-name[hidden] {
+  display: none !important;
+}

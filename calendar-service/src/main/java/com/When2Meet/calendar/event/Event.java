@@ -2,6 +2,9 @@ package com.When2Meet.calendar.event;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import com.When2Meet.calendar.user.User;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Table(name = "events")
@@ -23,6 +26,12 @@ public class Event {
     private String type;
 
     private String category;
+
+    @ManyToOne
+    @JoinColumn(name = "owner_id")
+    @JsonIgnore
+    private User owner;
+
 
     public Event() {
     }
@@ -86,4 +95,23 @@ public class Event {
     public void setCategory(String category) {
         this.category = category;
     }
+
+    public User getOwner(){
+        return owner;
+    }
+
+    public void setOwner(User owner){
+        this.owner = owner;
+    }
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    public Long getOwnerId() {
+        return owner == null ? null : owner.getId();
+    }
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    public String getOwnerName() {
+        return owner == null ? null : owner.getFullName();
+    }   
+
 }

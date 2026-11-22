@@ -229,7 +229,7 @@ export class CalendarComponent implements OnInit {
         },
         error: (error) => {
           console.error('Could not save event:', error);
-          alert('Could not update the event.');
+          alert(error?.error?.error ?? 'Could not update the event.');
         }
       });
 
@@ -268,7 +268,7 @@ export class CalendarComponent implements OnInit {
       },
       error: (error) => {
         console.error('Could not delete event:', error);
-        alert('Could not delete the event.');
+        alert(error?.error?.error ?? 'Could not delete the event.');
       }
     })
   }
@@ -336,6 +336,14 @@ export class CalendarComponent implements OnInit {
   }
   trackByIndex(index: number) {
     return index;
+  }
+
+  isShared(event: CalendarEvent): boolean {
+    return event.type === 'SHARED';
+  }
+
+  isFriendEvent(event: CalendarEvent): boolean {
+    return event.ownerId != null && String(event.ownerId) !== this.eventService.userId();
   }
 
 }

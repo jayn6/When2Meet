@@ -7,6 +7,8 @@ export interface CalendarEvent {
   location?: string;
   type: 'PRIVATE' | 'SHARED';
   category: string;
+  ownerId?: number;
+  ownerName?: string;
 }
 export interface TimetableClass {
   subject: string;
