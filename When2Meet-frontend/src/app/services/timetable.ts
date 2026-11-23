@@ -1,5 +1,6 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders} from '@angular/common/http';
+import { EventService } from './event.service';
 import { Observable } from 'rxjs';
 
 import {
@@ -13,6 +14,7 @@ import {
 export class TimetableService {
 
   private http = inject(HttpClient);
+  private eventService = inject(EventService)
 
   private apiUrl = 'http://localhost:8080/api/ai/timetable';
 
@@ -32,7 +34,9 @@ export class TimetableService {
 
     return this.http.post(
       `${this.apiUrl}/confirm`,
-      data
+      data, {headers: new HttpHeaders(
+        {'X-User-Id': this.eventService.userId()}
+      )}
     );
   }
 }

@@ -3,6 +3,9 @@ package com.When2Meet.calendar.ai;
 import com.When2Meet.calendar.event.Event;
 import com.When2Meet.calendar.event.EventRepository;
 
+import com.When2Meet.calendar.user.User;
+import com.When2Meet.calendar.user.UserRepository;
+
 import com.When2Meet.calendar.ai.dto.*;
 
 import org.springframework.http.MediaType;
@@ -20,13 +23,19 @@ public class AiController {
 
     private final GeminiService geminiService;
     private final EventRepository eventRepository;
+    private final UserRepository userRepository;
+
 
     public AiController(
         GeminiService geminiService,
-        EventRepository eventRepository
+        EventRepository eventRepository,
+        UserRepository userRepository
+
     ) {
         this.geminiService = geminiService;
         this.eventRepository = eventRepository;
+        this.userRepository = userRepository;
+
     }
 
     // STEP 1: Extract timetable
@@ -63,6 +72,7 @@ public class AiController {
     // STEP 2: Confirm and save timetable
     @PostMapping("/confirm")
     public Map<String, Object> confirm(
+        @RequestHeader("X-User-Id") Long userId,
         @RequestBody ConfirmTimetableRequest request
     ) {
 
@@ -90,6 +100,8 @@ public class AiController {
         }
 
         List<Event> eventsToSave = new ArrayList<>();
+        User owner = userRepository.findById(userId)
+            .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         // Go through every date in the schedule period
         for (LocalDate date = request.startDate();
@@ -148,6 +160,8 @@ public class AiController {
                     );
 
                     event.setCategory("CLASS");
+                    event.setOwner(owner);
+                    event.setType("PRIVATE");
 
                     eventsToSave.add(event);
                 }

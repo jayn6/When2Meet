@@ -39,6 +39,11 @@ export const routes: Routes = [
           import('./ai-studio/ai-studio').then(m => m.AiStudioComponent)
       },
       {
+        path: 'tasks',
+        loadComponent: () =>
+          import('./tasks/tasks').then(m => m.TasksComponent)
+      },
+      {
         path: 'friends',
         component: FriendsComponent
       }
